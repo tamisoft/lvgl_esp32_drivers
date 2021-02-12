@@ -1,7 +1,131 @@
 # NOTES:
 # - default <> if <> work only when no prompt is available for the user
 
+menu "LVGL TFT Display controller v2.0"
+    depends on IDF_TARGET_ESP32
+
+    menuconfig LV_MD_ENABLE
+        bool "Enable multi-display configuration"
+        help
+            Enable multi display configuration.
+
+        if LV_MD_ENABLE
+            config LV_MD_ENABLE_SPI
+                bool "Enable SPI displays"
+                help
+                    Enable multi display to support SPI displays.
+
+            config LV_MD_ENABLE_I2C
+                bool "Enable I2C displays"
+                help
+                    Enable multi display to support I2C displays.
+        endif
+
+    menu "SPI Display configuration"
+        depends on LV_MD_ENABLE_SPI
+
+        config LV_MD_NUMBER_OF_SPI_DISPLAYS
+            int "Number of SPI displays"
+            depends on LV_MD_ENABLE_SPI
+            default 1
+            help
+                Number of SPI displays
+
+        menuconfig LV_MD_SPI_DISPLAY_PORT
+            bool "SPI ports to use"
+
+            if LV_MD_SPI_DISPLAY_PORT
+                config LV_MD_SPI_DISPLAY_PORT_HSPI
+                    bool "HSPI - SPI2"
+
+                config LV_MD_SPI_DISPLAY_PORT_VSPI
+                    bool "VSPI - SPI3"
+            endif
+        menu "HSPI attached displays"
+            depends on LV_MD_SPI_DISPLAY_PORT_HSPI
+
+            config LV_MD_SPI_HSPI_FREQ
+                int "HSPI frequency (Hz)"
+                range 1000000 80000000
+                default 26000000
+                help
+                    Select HSPI clock frequency
+            config LV_MD_SPI_HSPI_MISO
+                int "HSPI MISO pin"
+                range -1 39
+                default 14
+                help
+                    Select HSPI MISO IO pin number or -1: unused
+            config LV_MD_SPI_HSPI_MOSI
+                int "HSPI MOSI pin"
+                range -1 39
+                default 16
+                help
+                    Select HSPI MISO IO pin number or -1: unused
+            config LV_MD_SPI_HSPI_SCLK
+                int "HSPI SCLK pin"
+                range -1 39
+                default 13
+                help
+                    Select HSPI MISO IO pin number or -1: unused
+            config LV_MD_SPI_HSPI_MAX_TRX_SIZE
+                int "Maximum transfer size"
+                range 1 64 if !LV_MD_SPI_HSPI_USE_DMA
+                default 64 if !LV_MD_SPI_HSPI_USE_DMA
+                default 0
+                help
+                    Select HSPI Maximum transfer size, defaults to 4096 if 0. If DMA is disabled the maximum transfer size is 64 bytes
+            config LV_MD_SPI_HSPI_USE_DMA
+                bool "HSPI uses DMA"
+                default 1
+                help
+                    Should HSPI use DMA
+            config LV_MD_SPI_HSPI_DMA_CHANNEL
+                int "  HSPI DMA channel"
+                depends on LV_MD_SPI_HSPI_USE_DMA
+                range 0 2
+                default 1
+                help
+                    Select HSPI DMA channel number
+
+            menuconfig LV_MD_SPI_HSPI_CS0
+                bool "HSPI_CS0"
+                if LV_MD_SPI_HSPI_CS0
+                    config LV_MD_SPI_HSPI_CS0_PINNUM
+                        int "IO number for CS0"
+                        range -1 39
+                        default 15
+                        help
+                            GPIO mapping for CS0
+                endif
+            menuconfig LV_MD_SPI_HSPI_CS1
+                bool "HSPI_CS1"
+                if LV_MD_SPI_HSPI_CS1
+                    config LV_MD_SPI_HSPI_CS1_PINNUM
+                        int "IO number for CS1"
+                        range -1 39
+                        default 4
+                        help
+                            GPIO mapping for CS1
+                endif
+            menuconfig LV_MD_SPI_HSPI_CS2
+                bool "HSPI_CS2"
+                if LV_MD_SPI_HSPI_CS2
+                    config LV_MD_SPI_HSPI_CS2_PINNUM
+                        int "IO number for CS2"
+                        range -1 39
+                        default 27
+                        help
+                            GPIO mapping for CS2
+                endif
+        endmenu
+
+    endmenu
+
+endmenu
+
 menu "LVGL TFT Display controller"
+    visible if !LV_MD_ENABLE
 
     # Predefined display configurations for multiple
     # evaluation/development boards.
